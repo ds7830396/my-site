@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор платежей и криптовалют</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .absolute{position:absolute}
+        .relative{position:relative}
+        .right-4{right:1rem}
+        .w-full{width:100%}
+        .border{border-width:1px}
+        .rounded{border-radius:0.25rem}
+        .p-2{padding:0.5rem}
+        .px-4{padding-left:1rem;padding-right:1rem}
+        .py-2{padding-top:0.5rem;padding-bottom:0.5rem}
+        .pr-16{padding-right:4rem}
+        .mb-4{margin-bottom:1rem}
+        .mb-6{margin-bottom:1.5rem}
+        .mt-1{margin-top:0.25rem}
+        .mt-2{margin-top:0.5rem}
+        .mt-4{margin-top:1rem}
+        .flex{display:flex}
+        .items-center{align-items:center}
+        .justify-center{justify-content:center}
+        .gap-4{gap:1rem}
+        .space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}
+        .text-center{text-align:center}
+        .text-sm{font-size:0.875rem;line-height:1.25rem}
+        .text-2xl{font-size:1.5rem;line-height:2rem}
+        .font-medium{font-weight:500}
+        .font-bold{font-weight:700}
+        .hidden{display:none}
+        .min-h-screen{min-height:100vh}
+        .max-h-40{max-height:10rem}
+        .overflow-y-auto{overflow-y:auto}
+        .flex-1{flex:1 1 0%}
+
+        .error-text {
+            color: #110000;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+        .notification {
+            display: none;
+            color: white;
+            background-color: #4CAF50;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .calculator-bg {
+            background-color: #ffffff;
+        }
+        .calculate-btn {
+            background-color: #ee0000;
+            color: #ffffff;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 500;
+            border-radius: 50px;
+            border: 0;
+            padding: 0.5rem 1rem;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .calculate-btn:hover {
+            background-color: #110000;
+        }
+        .reset-btn {
+            background-color: #eeeeee;
+            color: #110000;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 500;
+            border-radius: 50px;
+            border: 0;
+            padding: 0.5rem 1rem;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .reset-btn:hover {
+            background-color: #d3d3d3;
+        }
+        .refresh-icon {
+            color: #ee0000;
+        }
+        .input-field {
+            background-color: #ffffff;
+            border: 0;
+            border-radius: 50px;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+            color: #110000;
+            transition: border-color 0.3s ease-in-out;
+        }
+        .input-field:focus {
+            border-color: #ee0000;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(238, 0, 0, 0.2);
+        }
+        .input-field::placeholder {
+            color: #110000;
+            opacity: 0.5;
+        }
+        .suggestion-item {
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+            color: #110000;
+            border-radius: 10px;
+        }
+        .suggestion-item:hover {
+            background-color: #eeeeee;
+        }
+        .sanctioned-alert {
+            background-color: #ee0000;
+            color: #ffffff;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+            padding: 15px;
+            border-radius: 50px;
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .tab-btn {
+            background-color: #eeeeee;
+            color: #110000;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 500;
+            border-radius: 50px 0 0 50px;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .tab-btn:last-child {
+            border-radius: 0 50px 50px 0;
+        }
+        .tab-btn.active {
+            background-color: #ee0000;
+            color: #ffffff;
+        }
+        .tab-btn:hover {
+            background-color: #d3d3d3;
+        }
+        .tab-btn.active:hover {
+            background-color: #110000;
+        }
+        .calculator-container {
+            background-image: url('https://static.tildacdn.com/tild6263-3939-4561-b731-393766366331/earth.png');
+            background-size: cover;
+            background-position: right top;
+            background-repeat: no-repeat;
+            border-radius: 50px;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .calculator-content {
+            background-color: transparent;
+            border-radius: 50px;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+            min-height: 100%;
+        }
+        .loading-text {
+            color: #110000;
+            font-family: 'Onest', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+            text-align: center;
+        }
+        @media screen and (max-width: 639px) {
+            .calculate-btn, .reset-btn, .input-field, .sanctioned-alert, .tab-btn, .tab-btn:last-child, .calculator-container, .calculator-content {
+                border-radius: 35px;
+            }
+            .tab-btn:last-child {
+                border-radius: 0 35px 35px 0;
+            }
+            .calculate-btn, .reset-btn, .input-field, .sanctioned-alert, .error-text, .tab-btn, .loading-text {
+                font-size: 15px;
+            }
+            .calculate-btn, .reset-btn {
+                padding: 0.5rem 0.75rem;
+                max-width: 150px;
+            }
+            .calculator-container {
+                min-height: 500px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .flex.gap-4 {
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="calculator-bg flex items-center justify-center min-h-screen">
+    <div class="t396__elem tn-elem tn-elem__9303593861741436397653" data-elem-id="1741436397653" data-elem-type="shape" data-field-top-value="0" data-field-left-value="0" data-field-height-value="575" data-field-width-value="1050" data-field-axisy-value="top" data-field-axisx-value="center" data-field-container-value="grid" data-field-topunits-value="px" data-field-leftunits-value="px" data-field-heightunits-value="px" data-field-widthunits-value="px" data-field-widthmode-value="fixed" data-field-heightmode-value="fixed" data-field-height-res-360-value="500" data-field-container-res-360-value="window" data-field-heightmode-res-360-value="fixed" data-field-top-res-640-value="0" data-field-height-res-640-value="650" data-field-width-res-640-value="89" data-field-axisy-res-640-value="center" data-field-container-res-640-value="window" data-field-widthunits-res-640-value="%" data-field-widthmode-res-640-value="fixed" data-field-heightmode-res-640-value="fixed" data-fields="width,height,top,left,container,axisx,axisy,widthunits,heightunits,leftunits,topunits" style="width: 1050px; left: 184px; top: 185px; height: 575px;">
+        <div class="tn-atom">
+            <div class="calculator-container">
+                <div class="calculator-content">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Калькулятор платежей и криптовалют</h1>
+                    <div id="notification" class="notification"></div>
+
+                    <!-- Кнопка обновления курсов -->
+                    <button id="refreshRatesBtn" class="mb-4 py-2 px-4 reset-btn rounded" aria-label="Обновить курсы валют"><span class="refresh-icon">⟳</span> Обновить курсы</button>
+
+                    <!-- Вкладки -->
+                    <div class="flex mb-4">
+                        <button id="intlTab" class="flex-1 py-2 px-4 tab-btn active" aria-label="Международный платеж">Международный платеж</button>
+                        <button id="cryptoTab" class="flex-1 py-2 px-4 tab-btn" aria-label="Покупка/продажа crypto">Покупка/продажа crypto</button>
+                    </div>
+
+                    <!-- Калькулятор международного платежа -->
+                    <div id="intlCalculator" class="space-y-4">
+                        <!-- Страна плательщика -->
+                        <div>
+                            <label for="payerCountry" class="block text-sm font-medium">Страна плательщика</label>
+                            <input id="payerCountry" type="text" class="mt-1 p-2 w-full input-field rounded" placeholder="Введите код или название страны" aria-label="Страна плательщика">
+                            <div id="countrySuggestions" class="mt-2 max-h-40 overflow-y-auto border rounded hidden"></div>
+                            <div id="sanctionedAlert" class="sanctioned-alert">Перевод из этой страны невозможен, так как она находится под санкциями.</div>
+                        </div>
+                        <!-- Валюта плательщика -->
+                        <div>
+                            <label for="payerCurrency" class="block text-sm font-medium">Валюта плательщика</label>
+                            <select id="payerCurrency" class="mt-1 p-2 w-full input-field rounded" aria-label="Валюта плательщика">
+                                <option value="USD" selected>USD (Доллар США)</option>
+                                <option value="EUR">EUR (Евро)</option>
+                                <option value="CNY">CNY (Юань)</option>
+                                <option value="RUB">RUB (Рубль)</option>
+                                <option value="TRY">TRY (Турецкая лира)</option>
+                                <option value="AED">AED (Дирхам ОАЭ)</option>
+                                <option value="GBP">GBP (Фунт стерлингов)</option>
+                            </select>
+                        </div>
+                        <!-- Сумма -->
+                        <div>
+                            <label for="amount" class="block text-sm font-medium">Сумма</label>
+                            <input id="amount" type="number" class="mt-1 p-2 w-full input-field rounded" placeholder="Введите сумму" aria-label="Сумма платежа">
+                        </div>
+                        <!-- Страна получателя -->
+                        <div>
+                            <label for="recipientCountry" class="block text-sm font-medium">Страна получателя</label>
+                            <input id="recipientCountry" type="text" class="mt-1 p-2 w-full input-field rounded" placeholder="Введите код или название страны" aria-label="Страна получателя">
+                            <div id="recipientCountrySuggestions" class="mt-2 max-h-40 overflow-y-auto border rounded hidden"></div>
+                            <div id="recipientSanctionedAlert" class="sanctioned-alert">Перевод в эту страну невозможен, так как она находится под санкциями.</div>
+                        </div>
+                        <!-- Валюта получателя -->
+                        <div>
+                            <label for="recipientCurrency" class="block text-sm font-medium">Валюта получателя</label>
+                            <select id="recipientCurrency" class="mt-1 p-2 w-full input-field rounded" aria-label="Валюта получателя">
+                                <option value="USD">USD (Доллар США)</option>
+                                <option value="EUR">EUR (Евро)</option>
+                                <option value="CNY">CNY (Юань)</option>
+                                <option value="RUB">RUB (Рубль)</option>
+                                <option value="TRY">TRY (Турецкая лира)</option>
+                                <option value="AED">AED (Дирхам ОАЭ)</option>
+                                <option value="GBP">GBP (Фунт стерлингов)</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-4">
+                            <button id="calculateIntl" class="flex-1 py-2 calculate-btn text-white rounded" aria-label="Рассчитать международный платеж">Рассчитать</button>
+                            <button id="resetIntl" class="flex-1 py-2 reset-btn rounded" aria-label="Сбросить форму международного платежа">Сброс</button>
+                        </div>
+                        <div id="intlResult" class="mt-4 text-center"></div>
+                        <!-- Скрытая форма для Tilda -->
+                        <form id="tildaForm" class="hidden">
+                            <input type="hidden" name="amount" id="tildaAmount">
+                            <input type="hidden" name="payerCurrency" id="tildaPayerCurrency">
+                            <input type="hidden" name="payerCountry" id="tildaPayerCountry">
+                            <input type="hidden" name="recipientCountry" id="tildaRecipientCountry">
+                            <input type="hidden" name="recipientCurrency" id="tildaRecipientCurrency">
+                            <input type="hidden" name="equivalent_amount" id="tildaEquivalentAmount">
+                            <input type="hidden" name="commission" id="tildaCommission">
+                            <input type="hidden" name="total" id="tildaTotal">
+                        </form>
+                    </div>
+
+                    <!-- Калькулятор покупки/продажи криптовалюты -->
+                    <div id="cryptoTradeCalculator" class="space-y-4 hidden">
+                        <div class="relative">
+                            <label for="cryptoAmount" class="block text-sm font-medium">Сумма</label>
+                            <div class="flex items-center">
+                                <input id="cryptoAmount" type="number" class="mt-1 p-2 w-full input-field rounded pr-16" placeholder="Введите сумму" aria-label="Сумма для покупки/продажи криптовалюты">
+                                <span id="cryptoAmountCurrency" class="absolute right-4 mt-1 text-sm font-medium text-[#110000]"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="cryptoPair" class="block text-sm font-medium">Валютная пара</label>
+                            <select id="cryptoPair" class="mt-1 p-2 w-full input-field rounded" aria-label="Выберите валютную пару">
+                                <option value="RUB_USDT">RUB → USDT</option>
+                                <option value="RUB_USDC">RUB → USDC</option>
+                                <option value="RUB_BTC">RUB → BTC</option>
+                                <option value="USDT_RUB">USDT → RUB</option>
+                                <option value="USDC_RUB">USDC → RUB</option>
+                                <option value="BTC_RUB">BTC → RUB</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-4">
+                            <button id="calculateCrypto" class="flex-1 py-2 calculate-btn text-white rounded" aria-label="Рассчитать покупку/продажу криптовалюты">Рассчитать</button>
+                            <button id="resetCrypto" class="flex-1 py-2 reset-btn rounded" aria-label="Сбросить форму покупки/продажи криптовалюты">Сброс</button>
+                        </div>
+                        <div id="cryptoResult" class="mt-4 text-center"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <a href="https://www.coingecko.com/" target="_blank"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Список санкционных стран (9 стран) с названиями
+        const sanctionedCountriesWithNames = [
+            { name: "Сирия", code: "SY" },
+            { name: "Афганистан", code: "AF" },
+            { name: "Беларусь", code: "BY" },
+            { name: "Куба", code: "CU" },
+            { name: "Эфиопия", code: "ET" },
+            { name: "Иран", code: "IR" },
+            { name: "КНДР", code: "KP" },
+            { name: "Южный Судан", code: "SS" },
+            { name: "Судан", code: "SD" }
+        ];
+
+        // Список кодов санкционных стран (для быстрой проверки)
+        const sanctionedCountries = sanctionedCountriesWithNames.map(c => c.code);
+
+        // Список несанкционных стран (240 стран)
+        const countries = [
+            { name: "Албания", code: "AL" },
+            { name: "Алжир", code: "DZ" },
+            { name: "Андорра", code: "AD" },
+            { name: "Ангола", code: "AO" },
+            { name: "Ангилья", code: "AI" },
+            { name: "Антигуа и Барбуда", code: "AG" },
+            { name: "Аргентина", code: "AR" },
+            { name: "Армения", code: "AM" },
+            { name: "Аруба", code: "AW" },
+            { name: "Австралия", code: "AU" },
+            { name: "Австрия", code: "AT" },
+            { name: "Азербайджан", code: "AZ" },
+            { name: "Багамы", code: "BS" },
+            { name: "Бахрейн", code: "BH" },
+            { name: "Бангладеш", code: "BD" },
+            { name: "Барбадос", code: "BB" },
+            { name: "Бельгия", code: "BE" },
+            { name: "Белиз", code: "BZ" },
+            { name: "Бенин", code: "BJ" },
+            { name: "Бермуды", code: "BM" },
+            { name: "Бутан", code: "BT" },
+            { name: "Боливия", code: "BO" },
+            { name: "Бонайре, Синт-Эстатиус и Саба", code: "BQ" },
+            { name: "Босния и Герцеговина", code: "BA" },
+            { name: "Ботсвана", code: "BW" },
+            { name: "Бразилия", code: "BR" },
+            { name: "Бруней", code: "BN" },
+            { name: "Болгария", code: "BG" },
+            { name: "Буркина-Фасо", code: "BF" },
+            { name: "Бурунди", code: "BI" },
+            { name: "Кабо-Верде", code: "CV" },
+            { name: "Камбоджа", code: "KH" },
+            { name: "Камерун", code: "CM" },
+            { name: "Канада", code: "CA" },
+            { name: "Каймановы острова", code: "KY" },
+            { name: "Чили", code: "CL" },
+            { name: "Китай", code: "CN" },
+            { name: "Колумбия", code: "CO" },
+            { name: "Коморы", code: "KM" },
+            { name: "Республика Конго", code: "CG" },
+            { name: "Острова Кука", code: "CK" },
+            { name: "Коста-Рика", code: "CR" },
+            { name: "Хорватия", code: "HR" },
+            { name: "Кюрасао", code: "CW" },
+            { name: "Кипр", code: "CY" },
+            { name: "Чехия", code: "CZ" },
+            { name: "Дания", code: "DK" },
+            { name: "Джибути", code: "DJ" },
+            { name: "Доминика", code: "DM" },
+            { name: "Доминиканская Республика", code: "DO" },
+            { name: "Эквадор", code: "EC" },
+            { name: "Египет", code: "EG" },
+            { name: "Сальвадор", code: "SV" },
+            { name: "Экваториальная Гвинея", code: "GQ" },
+            { name: "Эритрея", code: "ER" },
+            { name: "Эстония", code: "EE" },
+            { name: "Эсватини", code: "SZ" },
+            { name: "Фолклендские острова", code: "FK" },
+            { name: "Фарерские острова", code: "FO" },
+            { name: "Фиджи", code: "FJ" },
+            { name: "Финляндия", code: "FI" },
+            { name: "Франция", code: "FR" },
+            { name: "Французская Гвиана", code: "GF" },
+            { name: "Французская Полинезия", code: "PF" },
+            { name: "Габон", code: "GA" },
+            { name: "Гамбия", code: "GM" },
+            { name: "Грузия", code: "GE" },
+            { name: "Германия", code: "DE" },
+            { name: "Гана", code: "GH" },
+            { name: "Гибралтар", code: "GI" },
+            { name: "Греция", code: "GR" },
+            { name: "Гренландия", code: "GL" },
+            { name: "Гренада", code: "GD" },
+            { name: "Гваделупа", code: "GP" },
+            { name: "Гуам", code: "GU" },
+            { name: "Гватемала", code: "GT" },
+            { name: "Гернси", code: "GG" },
+            { name: "Гвинея", code: "GN" },
+            { name: "Гвинея-Бисау", code: "GW" },
+            { name: "Гайана", code: "GY" },
+            { name: "Гаити", code: "HT" },
+            { name: "Гондурас", code: "HN" },
+            { name: "Гонконг", code: "HK" },
+            { name: "Венгрия", code: "HU" },
+            { name: "Исландия", code: "IS" },
+            { name: "Индия", code: "IN" },
+            { name: "Индонезия", code: "ID" },
+            { name: "Ирак", code: "IQ" },
+            { name: "Ирландия", code: "IE" },
+            { name: "Остров Мэн", code: "IM" },
+            { name: "Израиль", code: "IL" },
+            { name: "Италия", code: "IT" },
+            { name: "Кот-д’Ивуар", code: "CI" },
+            { name: "Ямайка", code: "JM" },
+            { name: "Япония", code: "JP" },
+            { name: "Джерси", code: "JE" },
+            { name: "Иордания", code: "JO" },
+            { name: "Казахстан", code: "KZ" },
+            { name: "Кения", code: "KE" },
+            { name: "Кирибати", code: "KI" },
+            { name: "Кувейт", code: "KW" },
+            { name: "Киргизия", code: "KG" },
+            { name: "Лаос", code: "LA" },
+            { name: "Латвия", code: "LV" },
+            { name: "Ливан", code: "LB" },
+            { name: "Лесото", code: "LS" },
+            { name: "Либерия", code: "LR" },
+            { name: "Лихтенштейн", code: "LI" },
+            { name: "Литва", code: "LT" },
+            { name: "Люксембург", code: "LU" },
+            { name: "Макао", code: "MO" },
+            { name: "Мадагаскар", code: "MG" },
+            { name: "Малави", code: "MW" },
+            { name: "Малайзия", code: "MY" },
+            { name: "Мальдивы", code: "MV" },
+            { name: "Мали", code: "ML" },
+            { name: "Мальта", code: "MT" },
+            { name: "Маршалловы острова", code: "MH" },
+            { name: "Мартиника", code: "MQ" },
+            { name: "Мавритания", code: "MR" },
+            { name: "Маврикий", code: "MU" },
+            { name: "Майотта", code: "YT" },
+            { name: "Мексика", code: "MX" },
+            { name: "Микронезия", code: "FM" },
+            { name: "Молдова", code: "MD" },
+            { name: "Монако", code: "MC" },
+            { name: "Монголия", code: "MN" },
+            { name: "Черногория", code: "ME" },
+            { name: "Монтсеррат", code: "MS" },
+            { name: "Марокко", code: "MA" },
+            { name: "Мозамбик", code: "MZ" },
+            { name: "Мьянма", code: "MM" },
+            { name: "Намибия", code: "NA" },
+            { name: "Науру", code: "NR" },
+            { name: "Непал", code: "NP" },
+            { name: "Нидерланды", code: "NL" },
+            { name: "Новая Каледония", code: "NC" },
+            { name: "Новая Зеландия", code: "NZ" },
+            { name: "Никарагуа", code: "NI" },
+            { name: "Нигер", code: "NE" },
+            { name: "Нигерия", code: "NG" },
+            { name: "Ниуэ", code: "NU" },
+            { name: "Северная Македония", code: "MK" },
+            { name: "Северные Марианские острова", code: "MP" },
+            { name: "Норвегия", code: "NO" },
+            { name: "Оман", code: "OM" },
+            { name: "Пакистан", code: "PK" },
+            { name: "Палау", code: "PW" },
+            { name: "Палестина", code: "PS" },
+            { name: "Панама", code: "PA" },
+            { name: "Папуа — Новая Гвинея", code: "PG" },
+            { name: "Парагвай", code: "PY" },
+            { name: "Перу", code: "PE" },
+            { name: "Филиппины", code: "PH" },
+            { name: "Польша", code: "PL" },
+            { name: "Португалия", code: "PT" },
+            { name: "Пуэрто-Рико", code: "PR" },
+            { name: "Катар", code: "QA" },
+            { name: "Реюньон", code: "RE" },
+            { name: "Румыния", code: "RO" },
+            { name: "Россия", code: "RU" },
+            { name: "Сан-Марино", code: "SM" },
+            { name: "Сан-Томе и Принсипи", code: "ST" },
+            { name: "Саудовская Аравия", code: "SA" },
+            { name: "Сенегал", code: "SN" },
+            { name: "Сербия", code: "RS" },
+            { name: "Сейшельские острова", code: "SC" },
+            { name: "Сьерра-Леоне", code: "SL" },
+            { name: "Сингапур", code: "SG" },
+            { name: "Синт-Мартен", code: "SX" },
+            { name: "Словакия", code: "SK" },
+            { name: "Словения", code: "SI" },
+            { name: "Соломоновы острова", code: "SB" },
+            { name: "Южная Африка", code: "ZA" },
+            { name: "Южная Корея", code: "KR" },
+            { name: "Испания", code: "ES" },
+            { name: "Шри-Ланка", code: "LK" },
+            { name: "Сент-Китс и Невис", code: "KN" },
+            { name: "Сент-Люсия", code: "LC" },
+            { name: "Сент-Винсент и Гренадины", code: "VC" },
+            { name: "Суринам", code: "SR" },
+            { name: "Швеция", code: "SE" },
+            { name: "Швейцария", code: "CH" },
+            { name: "Тайвань", code: "TW" },
+            { name: "Таджикистан", code: "TJ" },
+            { name: "Танзания", code: "TZ" },
+            { name: "Таиланд", code: "TH" },
+            { name: "Восточный Тимор", code: "TL" },
+            { name: "Того", code: "TG" },
+            { name: "Тонга", code: "TO" },
+            { name: "Тринидад и Тобаго", code: "TT" },
+            { name: "Тунис", code: "TN" },
+            { name: "Турция", code: "TR" },
+            { name: "Туркменистан", code: "TM" },
+            { name: "Острова Тёркс и Кайкос", code: "TC" },
+            { name: "Тувалу", code: "TV" },
+            { name: "Уганда", code: "UG" },
+            { name: "Украина", code: "UA" },
+            { name: "ОАЭ", code: "AE" },
+            { name: "Великобритания", code: "GB" },
+            { name: "США", code: "US" },
+            { name: "Уругвай", code: "UY" },
+            { name: "Узбекистан", code: "UZ" },
+            { name: "Вануату", code: "VU" },
+            { name: "Венесуэла", code: "VE" },
+            { name: "Вьетнам", code: "VN" },
+            { name: "Британские Виргинские острова", code: "VG" },
+            { name: "Уоллис и Футуна", code: "WF" },
+            { name: "Самоа", code: "WS" },
+            { name: "Йемен", code: "YE" },
+            { name: "Западная Сахара", code: "EH" },
+            { name: "Замбия", code: "ZM" },
+            { name: "Зимбабве", code: "ZW" }
+        ];
+
+        let exchangeRates = {
+            USD: 81.4933,
+            EUR: 92.8370,
+            CNY: 11.1713,
+            RUB: 1,
+            TRY: 2.12212,
+            AED: 22.1901,
+            GBP: 108.5,
+            USDT: 81.4933,
+            USDC: 81.4933,
+            BTC: 63500 * 81.4933
+        };
+
+        let cryptoRates = {
+            USDT: 1,
+            USDC: 1,
+            BTC: 63500
+        };
+
+        const fallbackExchangeRates = {
+            USD: 81.4933,
+            EUR: 92.8370,
+            CNY: 11.1713,
+            RUB: 1,
+            TRY: 2.12212,
+            AED: 22.1901,
+            GBP: 108.5,
+            USDT: 81.4933,
+            USDC: 81.4933,
+            BTC: 63500 * 81.4933
+        };
+
+        const fallbackCryptoRates = {
+            USDT: 1,
+            USDC: 1,
+            BTC: 63500
+        };
+
+        let commissions = {};
+        let cryptoCommission = null;
+
+        let hasSanctionedCountry = {
+            payer: false,
+            recipient: false
+        };
+
+        // Определяем диапазоны сумм и соответствующие листы
+        const cryptoCommissionRanges = [
+            { min: 300000, max: 2000000, sheet: '300000-2000000' },
+            { min: 2000001, max: 5000000, sheet: '2000001-5000000' },
+            { min: 5000001, max: 10000000, sheet: '5000001-10000000' },
+            { min: 10000001, max: 20000000, sheet: '10000001-20000000' },
+            { min: 20000001, max: 50000000, sheet: '20000001-50000000' },
+            { min: 50000001, max: 10000000000, sheet: '50000001-10000000000' }
+        ];
+
+        // Функция для определения листа по сумме в рублях
+        function getSheetName(amountInRUB, ranges = cryptoCommissionRanges) {
+            for (const range of ranges) {
+                if (amountInRUB >= range.min && amountInRUB <= range.max) {
+                    return range.sheet;
+                }
+            }
+            return '50000001-10000000000';
+        }
+
+        // Функция для получения кода страны по её названию
+        function getCountryCodeByName(name) {
+            if (!name) return null;
+            name = name.trim().toLowerCase();
+            const country = countries.find(c => 
+                c.name.toLowerCase() === name ||
+                c.name.toLowerCase().replace(/[^\w\s]/g, '') === name.replace(/[^\w\s]/g, '')
+            );
+            return country ? country.code : null;
+        }
+
+        // Функция для извлечения названия страны из формата { name: "Страна", code: "XX" }
+        function extractCountryName(dataString) {
+            if (!dataString) return null;
+            let match = dataString.match(/{ name: "(.+?)", code: "[A-Z]{2}" }/i);
+            if (match) {
+                return match[1].trim();
+            }
+            match = dataString.match(/{ name: "(.+?)"/i);
+            if (match) {
+                return match[1].trim();
+            }
+            if (typeof dataString === 'string' && dataString.trim().length > 0) {
+                return dataString.trim();
+            }
+            return null;
+        }
+
+        // Функция для извлечения кода страны из формата { name: "Страна", code: "XX" }
+        function extractCountryCode(dataString) {
+            if (!dataString) return null;
+            let match = dataString.match(/{ name: ".+?", code: "([A-Z]{2})" }/i);
+            if (match) {
+                return match[1].trim().toUpperCase();
+            }
+            if (typeof dataString === 'string' && /^[A-Z]{2}$/.test(dataString.trim())) {
+                return dataString.trim().toUpperCase();
+            }
+            const name = extractCountryName(dataString);
+            if (name) {
+                return getCountryCodeByName(name);
+            }
+            return null;
+        }
+
+        // Функция для извлечения комиссии
+        function parseCommission(commissionRaw) {
+            if (commissionRaw == null) {
+                console.warn(`parseCommission: Некорректное значение комиссии: ${commissionRaw}`);
+                return null;
+            }
+
+            let commissionStr = String(commissionRaw).trim().replace(',', '.');
+
+            commissionStr = commissionStr.replace('%', '');
+
+            const commissionValue = parseFloat(commissionStr);
+
+            if (isNaN(commissionValue)) {
+                console.warn(`parseCommission: Не удалось преобразовать ${commissionRaw} в число`);
+                return null;
+            }
+
+            return commissionValue > 1 ? commissionValue / 100 : commissionValue;
+        }
+
+        // Функция для получения комиссий из Google Таблиц (международные)
+        async function fetchCommissions(amountInRUB, payerCountry, recipientCountry) {
+            const sheetName = getSheetName(amountInRUB);
+            console.log(`fetchCommissions: Сумма в рублях: ${amountInRUB.toFixed(2)} RUB, выбранный лист: ${sheetName}`);
+
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbzIHbns2RCCvaHg8OYr_l74sC5S3MSjG1JGDWSOV09100ADWEDfBtmIwWeu01OAh7vw/exec';
+
+            try {
+                const response = await axios.get(`${scriptURL}?sheet=${sheetName}`);
+                const data = response.data;
+
+                console.log(`fetchCommissions: Полные данные из Google Таблиц для листа ${sheetName}:`, JSON.stringify(data, null, 2));
+
+                commissions = {};
+
+                const recipientCountries = [];
+                const headerRow = data[0];
+                console.log(`fetchCommissions: Заголовочная строка (строка 1):`, headerRow);
+                for (let col = 1; col < headerRow.length; col++) {
+                    const countryCode = extractCountryCode(headerRow[col]);
+                    recipientCountries[col] = countryCode;
+                    console.log(`fetchCommissions: Столбец ${col + 1} (B${col + 1}): Исходные данные: ${headerRow[col]}, Извлечённый код: ${countryCode}`);
+                }
+                console.log(`fetchCommissions: Страны получателей (по столбцам):`, recipientCountries);
+
+                let recipientColumn = -1;
+                for (let col = 1; col < recipientCountries.length; col++) {
+                    if (recipientCountries[col] === recipientCountry) {
+                        recipientColumn = col;
+                        break;
+                    }
+                }
+                if (recipientColumn === -1) {
+                    console.warn(`fetchCommissions: Страна получателя ${recipientCountry} не найдена в столбцах. Доступные страны:`, recipientCountries.filter(c => c));
+                    return;
+                }
+                console.log(`fetchCommissions: Страна получателя ${recipientCountry} найдена в столбце ${recipientColumn}`);
+
+                let senderRow = -1;
+                for (let row = 1; row < data.length; row++) {
+                    const senderData = data[row][0];
+                    const senderCountryCode = extractCountryCode(senderData);
+                    console.log(`fetchCommissions: Проверка строки ${row + 1}, столбец A: ${senderData}, извлечённый код: ${senderCountryCode}`);
+                    if (senderCountryCode === payerCountry) {
+                        senderRow = row;
+                        break;
+                    }
+                }
+                if (senderRow === -1) {
+                    console.warn(`fetchCommissions: Страна отправителя ${payerCountry} не найдена в строках. Проверенные данные:`, data.slice(1).map(row => row[0]));
+                    return;
+                }
+                console.log(`fetchCommissions: Страна отправителя ${payerCountry} найдена в строке ${senderRow}`);
+
+                const commissionRaw = data[senderRow][recipientColumn];
+                console.log(`fetchCommissions: Значение на пересечении строки ${senderRow + 1}, столбца ${recipientColumn + 1}: ${commissionRaw}, Тип: ${typeof commissionRaw}`);
+                
+                if (commissionRaw == null || commissionRaw === '') {
+                    console.warn(`fetchCommissions: Пустое или отсутствующее значение комиссии для ${payerCountry}-${recipientCountry}`);
+                    return;
+                }
+
+                let commission = parseCommission(commissionRaw);
+                console.log(`fetchCommissions: Преобразованное значение комиссии: ${commission}`);
+
+                if (commission !== null) {
+                    const key = `${payerCountry}-${recipientCountry}`;
+                    commissions[key] = commission;
+                    console.log(`fetchCommissions: Комиссия для пары ${key}: ${(commission * 100).toFixed(2)}%`);
+                } else {
+                    console.warn(`fetchCommissions: Комиссия для пары ${payerCountry}-${recipientCountry} не установлена. Исходное значение: ${commissionRaw}`);
+                }
+
+                console.log(`fetchCommissions: Итоговые комиссии:`, commissions);
+            } catch (error) {
+                console.error('fetchCommissions: Ошибка при загрузке комиссий:', error);
+                showNotification('Ошибка: Не удалось загрузить данные комиссии. Попробуйте позже.');
+            }
+        }
+
+        // Функция для получения крипто-комиссий из Google Таблиц
+        async function fetchCryptoCommission(amountInRUB) {
+            const sheetName = getSheetName(amountInRUB, cryptoCommissionRanges);
+            console.log(`fetchCryptoCommission: Сумма в рублях: ${amountInRUB.toFixed(2)} RUB, выбранный лист: ${sheetName}`);
+
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbzfxrNs8mkYkqGHd8mHTvS0R2VOXznyGjTdVMcpHHGRUbgbNr3bNAinro9ni5HT2Ay9/exec';
+
+            try {
+                const response = await axios.get(`${scriptURL}?sheet=${sheetName}`);
+                const data = response.data;
+
+                console.log(`fetchCryptoCommission: Данные из Google Таблиц для листа ${sheetName}:`, JSON.stringify(data, null, 2));
+
+                const commissionRaw = data[1][1];
+                console.log(`fetchCryptoCommission: Значение в B2: ${commissionRaw}, Тип: ${typeof commissionRaw}`);
+
+                if (commissionRaw == null || commissionRaw === '') {
+                    console.warn(`fetchCryptoCommission: Пустое или отсутствующее значение комиссии в B2 для листа ${sheetName}`);
+                    showNotification('Ошибка: Не удалось получить комиссию. Проверьте настройки таблицы.');
+                    return null;
+                }
+
+                const commission = parseCommission(commissionRaw);
+                console.log(`fetchCryptoCommission: Преобразованное значение комиссии: ${commission}`);
+
+                if (commission !== null) {
+                    cryptoCommission = commission;
+                    console.log(`fetchCryptoCommission: Комиссия установлена: ${(commission * 100).toFixed(2)}%`);
+                    return commission;
+                } else {
+                    console.warn(`fetchCryptoCommission: Не удалось установить комиссию. Исходное значение: ${commissionRaw}`);
+                    showNotification('Ошибка: Неверный формат комиссии в таблице.');
+                    return null;
+                }
+            } catch (error) {
+                console.error('fetchCryptoCommission: Ошибка при загрузке крипто-комиссии:', error);
+                showNotification('Ошибка: Не удалось загрузить данные комиссии. Попробуйте позже.');
+                return null;
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 3000);
+        }
+
+        async function fetchExchangeRates(forceRefresh = false) {
+            const cachedRates = localStorage.getItem('exchangeRates');
+            const lastFetch = localStorage.getItem('lastFetchTime');
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            if (!forceRefresh && cachedRates && lastFetch && (Date.now() - lastFetch < oneDay)) {
+                exchangeRates = JSON.parse(cachedRates);
+                console.log('Используются кэшированные курсы (фиат):', exchangeRates);
+                return;
+            }
+
+            try {
+                const response = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+                const data = await response.json();
+                const rates = data.Valute;
+
+                exchangeRates = {
+                    USD: rates.USD.Value,
+                    EUR: rates.EUR.Value,
+                    CNY: rates.CNY.Value,
+                    RUB: 1,
+                    TRY: rates.TRY.Value / 10,
+                    AED: rates.AED.Value,
+                    GBP: rates.GBP.Value,
+                    USDT: exchangeRates.USDT,
+                    USDC: exchangeRates.USDC,
+                    BTC: exchangeRates.BTC
+                };
+
+                localStorage.setItem('exchangeRates', JSON.stringify(exchangeRates));
+                localStorage.setItem('lastFetchTime', Date.now());
+                console.log('Курсы валют успешно обновлены:', exchangeRates);
+            } catch (error) {
+                console.error('Ошибка при получении курсов валют:', error);
+                exchangeRates = { ...fallbackExchangeRates };
+                localStorage.setItem('exchangeRates', JSON.stringify(exchangeRates));
+                localStorage.setItem('lastFetchTime', Date.now());
+            }
+        }
+
+        async function fetchCryptoRates(forceRefresh = false) {
+            const cachedCryptoRates = localStorage.getItem('cryptoRates');
+            const lastCryptoFetch = localStorage.getItem('lastCryptoFetchTime');
+            const oneHour = 60 * 60 * 1000;
+
+            if (!forceRefresh && cachedCryptoRates && lastCryptoFetch && (Date.now() - lastCryptoFetch < oneHour)) {
+                cryptoRates = JSON.parse(cachedCryptoRates);
+                console.log('Используются кэшированные курсы (крипто):', cryptoRates);
+                return;
+            }
+
+            try {
+                const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,usd-coin,tether&vs_currencies=rub');
+                const data = response.data;
+
+                exchangeRates = {
+                    ...exchangeRates,
+                    USDT: data['tether'].rub || fallbackExchangeRates.USDT,
+                    USDC: data['usd-coin'].rub || fallbackExchangeRates.USDC,
+                    BTC: data.bitcoin.rub || fallbackExchangeRates.BTC
+                };
+
+                localStorage.setItem('exchangeRates', JSON.stringify(exchangeRates));
+                localStorage.setItem('lastCryptoFetchTime', Date.now());
+                console.log('Курсы криптовалют (RUB) успешно обновлены:', exchangeRates);
+            } catch (error) {
+                console.error('Ошибка при получении курсов криптовалют:', error);
+                exchangeRates = { ...fallbackExchangeRates };
+                localStorage.setItem('exchangeRates', JSON.stringify(exchangeRates));
+                localStorage.setItem('lastCryptoFetchTime', Date.now());
+                showNotification('Ошибка: Не удалось обновить курсы криптовалют.');
+            }
+        }
+
+        async function refreshRates() {
+            await Promise.all([fetchExchangeRates(true), fetchCryptoRates(true)]);
+            showNotification('Курсы валют успешно обновлены!');
+        }
+
+        function checkSanctionedCountry(inputElement, alertElement) {
+            const value = inputElement.value.toUpperCase().trim();
+            const isPayer = inputElement.id === 'payerCountry';
+
+            if (!value) {
+                alertElement.style.display = 'none';
+                hasSanctionedCountry[isPayer ? 'payer' : 'recipient'] = false;
+                return true;
+            }
+
+            if (sanctionedCountries.includes(value)) {
+                alertElement.style.display = 'block';
+                hasSanctionedCountry[isPayer ? 'payer' : 'recipient'] = true;
+                return false;
+            }
+
+            alertElement.style.display = 'none';
+            hasSanctionedCountry[isPayer ? 'payer' : 'recipient'] = false;
+            return true;
+        }
+
+        function checkCountryExists(inputElement, alertElement) {
+            const value = inputElement.value.toUpperCase().trim();
+
+            if (!value) {
+                alertElement.style.display = 'none';
+                checkSanctionedCountry(inputElement, alertElement);
+                return true;
+            }
+
+            const countryExists = countries.some(c => c.code === value) || sanctionedCountries.includes(value);
+            if (!countryExists) {
+                alertElement.textContent = 'Страна не найдена. Пожалуйста, выберите страну из списка.';
+                alertElement.style.display = 'block';
+                return false;
+            }
+
+            return checkSanctionedCountry(inputElement, alertElement);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        ['payerCountry', 'recipientCountry'].forEach(id => {
+            const input = document.getElementById(id);
+            const alert = document.getElementById(id === 'payerCountry' ? 'sanctionedAlert' : 'recipientSanctionedAlert');
+            const suggestionsDiv = document.getElementById(id === 'payerCountry' ? 'countrySuggestions' : 'recipientCountrySuggestions');
+
+            const updateSuggestions = debounce(() => {
+                const query = input.value.toLowerCase().trim();
+                suggestionsDiv.innerHTML = '';
+
+                if (query) {
+                    const filteredCountries = countries.filter(c => 
+                        c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query)
+                    );
+                    const filteredSanctioned = sanctionedCountriesWithNames.filter(c => 
+                        c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query)
+                    );
+                    const allFiltered = [...filteredCountries, ...filteredSanctioned];
+
+                    if (allFiltered.length > 0) {
+                        allFiltered.forEach(country => {
+                            const div = document.createElement('div');
+                            div.className = 'p-2 suggestion-item cursor-pointer';
+                            div.textContent = `${country.name} (${country.code})`;
+                            div.addEventListener('click', () => {
+                                input.value = country.code;
+                                suggestionsDiv.classList.add('hidden');
+                                checkCountryExists(input, alert);
+                            });
+                            suggestionsDiv.appendChild(div);
+                        });
+                        suggestionsDiv.classList.remove('hidden');
+                    } else {
+                        suggestionsDiv.classList.add('hidden');
+                    }
+                } else {
+                    suggestionsDiv.classList.add('hidden');
+                }
+            }, 300);
+
+            input.addEventListener('input', updateSuggestions);
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    suggestionsDiv.classList.add('hidden');
+                    checkCountryExists(input, alert);
+                }, 200);
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            const payerCountryInput = document.getElementById('payerCountry');
+            const payerSuggestionsDiv = document.getElementById('countrySuggestions');
+            const payerSanctionedAlert = document.getElementById('sanctionedAlert');
+            const recipientCountryInput = document.getElementById('recipientCountry');
+            const recipientSuggestionsDiv = document.getElementById('recipientCountrySuggestions');
+            const recipientSanctionedAlert = document.getElementById('recipientSanctionedAlert');
+
+            if (!payerCountryInput.contains(e.target) && !payerSuggestionsDiv.contains(e.target)) {
+                payerSuggestionsDiv.classList.add('hidden');
+                checkCountryExists(payerCountryInput, payerSanctionedAlert);
+            }
+
+            if (!recipientCountryInput.contains(e.target) && !recipientSuggestionsDiv.contains(e.target)) {
+                recipientSuggestionsDiv.classList.add('hidden');
+                checkCountryExists(recipientCountryInput, recipientSanctionedAlert);
+            }
+        });
+
+        document.getElementById('refreshRatesBtn').addEventListener('click', refreshRates);
+
+        const intlTab = document.getElementById('intlTab');
+        const cryptoTab = document.getElementById('cryptoTab');
+        const intlCalculator = document.getElementById('intlCalculator');
+        const cryptoTradeCalculator = document.getElementById('cryptoTradeCalculator');
+
+        intlTab.addEventListener('click', () => {
+            intlTab.classList.add('active');
+            cryptoTab.classList.remove('active');
+            intlCalculator.classList.remove('hidden');
+            cryptoTradeCalculator.classList.add('hidden');
+        });
+
+        cryptoTab.addEventListener('click', () => {
+            cryptoTab.classList.add('active');
+            intlTab.classList.remove('active');
+            cryptoTradeCalculator.classList.remove('hidden');
+            intlCalculator.classList.add('hidden');
+            updateCryptoAmountCurrency();
+        });
+
+        async function calculateInternationalTransfer() {
+            const payerCountryInput = document.getElementById('payerCountry').value.trim();
+            const payerCurrency = document.getElementById('payerCurrency').value;
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const recipientCountryInput = document.getElementById('recipientCountry').value.trim();
+            const recipientCurrency = document.getElementById('recipientCurrency').value;
+            const resultDiv = document.getElementById('intlResult');
+
+            resultDiv.innerHTML = '<p class="loading-text">Рассчитываем...</p>';
+
+            const payerCountry = getCountryCodeByName(payerCountryInput) || payerCountryInput.toUpperCase();
+            const recipientCountry = getCountryCodeByName(recipientCountryInput) || recipientCountryInput.toUpperCase();
+
+            if (hasSanctionedCountry.payer || hasSanctionedCountry.recipient) {
+                resultDiv.innerHTML = '<p class="error-text">Перевод невозможен, так как одна из стран находится под санкциями.</p>';
+                return;
+            }
+
+            if (!payerCountry || !recipientCountry || !countries.some(c => c.code === payerCountry) || !countries.some(c => c.code === recipientCountry)) {
+                resultDiv.innerHTML = '<p class="error-text">Пожалуйста, выберите действительные страны для перевода.</p>';
+                return;
+            }
+
+            if (isNaN(amount) || amount <= 0) {
+                resultDiv.innerHTML = '<p class="error-text">Пожалуйста, введите корректную сумму.</p>';
+                return;
+            }
+
+            const amountInRUB = amount * exchangeRates[payerCurrency];
+            const minAmountInPayerCurrency = 300000 / exchangeRates[payerCurrency];
+
+            if (amountInRUB < 300000) {
+                resultDiv.innerHTML = `<p class="error-text">Сделка невозможна, так как сумма меньше минимальной (${minAmountInPayerCurrency.toFixed(2)} ${payerCurrency}).</p>`;
+                return;
+            }
+
+            await fetchCommissions(amountInRUB, payerCountry, recipientCountry);
+
+            const commissionKey = `${payerCountry}-${recipientCountry}`;
+            const commission = commissions[commissionKey];
+
+            if (!commission) {
+                resultDiv.innerHTML = `<p class="error-text">Комиссия для перевода из ${payerCountry} в ${recipientCountry} не найдена. Пожалуйста, свяжитесь с поддержкой.</p>`;
+                return;
+            }
+
+            const equivalentAmount = amount * exchangeRates[payerCurrency] / exchangeRates[recipientCurrency];
+            const commissionAmount = amount * commission;
+            const total = amount + commissionAmount;
+
+            resultDiv.innerHTML = `
+                <p>Сумма: ${amount.toFixed(2)} ${payerCurrency}</p>
+                <p>Эквивалент: ${equivalentAmount.toFixed(2)} ${recipientCurrency}</p>
+                <p>Комиссия (${(commission * 100).toFixed(2)}%): ${commissionAmount.toFixed(2)} ${payerCurrency}</p>
+                <p>Итого: ${total.toFixed(2)} ${payerCurrency}</p>
+            `;
+
+            document.getElementById('tildaAmount').value = amount.toFixed(2);
+            document.getElementById('tildaPayerCurrency').value = payerCurrency;
+            document.getElementById('tildaPayerCountry').value = payerCountry;
+            document.getElementById('tildaRecipientCountry').value = recipientCountry;
+            document.getElementById('tildaRecipientCurrency').value = recipientCurrency;
+            document.getElementById('tildaEquivalentAmount').value = equivalentAmount.toFixed(2);
+            document.getElementById('tildaCommission').value = commissionAmount.toFixed(2);
+            document.getElementById('tildaTotal').value = total.toFixed(2);
+        }
+
+        document.getElementById('calculateIntl').addEventListener('click', calculateInternationalTransfer);
+
+        document.getElementById('resetIntl').addEventListener('click', () => {
+            document.getElementById('payerCountry').value = '';
+            document.getElementById('payerCurrency').value = 'USD';
+            document.getElementById('amount').value = '';
+            document.getElementById('recipientCountry').value = '';
+            document.getElementById('recipientCurrency').value = '';
+            document.getElementById('intlResult').innerHTML = '';
+            document.getElementById('countrySuggestions').classList.add('hidden');
+            document.getElementById('recipientCountrySuggestions').classList.add('hidden');
+            document.getElementById('sanctionedAlert').style.display = 'none';
+            document.getElementById('recipientSanctionedAlert').style.display = 'none';
+            hasSanctionedCountry.payer = false;
+            hasSanctionedCountry.recipient = false;
+        });
+
+        function updateCryptoAmountCurrency() {
+            const cryptoPair = document.getElementById('cryptoPair').value;
+            const cryptoAmountCurrency = document.getElementById('cryptoAmountCurrency');
+            cryptoAmountCurrency.textContent = cryptoPair.split('_')[0];
+        }
+
+        document.getElementById('cryptoPair').addEventListener('change', updateCryptoAmountCurrency);
+
+        async function calculateCrypto() {
+            const cryptoAmount = parseFloat(document.getElementById('cryptoAmount').value);
+            const cryptoPair = document.getElementById('cryptoPair').value;
+            const resultDiv = document.getElementById('cryptoResult');
+
+            resultDiv.innerHTML = '<p class="loading-text">Рассчитываем...</p>';
+
+            if (isNaN(cryptoAmount) || cryptoAmount <= 0) {
+                resultDiv.innerHTML = '<p class="error-text">Пожалуйста, введите корректную сумму.</p>';
+                return;
+            }
+
+            const [fromCurrency, toCurrency] = cryptoPair.split('_');
+            let amountInRUB, minAmountInFromCurrency, decimals;
+
+            if (fromCurrency === 'RUB') {
+                amountInRUB = cryptoAmount;
+                minAmountInFromCurrency = 300000;
+                decimals = 2;
+            } else {
+                amountInRUB = cryptoAmount * exchangeRates[fromCurrency];
+                minAmountInFromCurrency = 300000 / exchangeRates[fromCurrency];
+                decimals = 8;
+            }
+
+            if (amountInRUB < 300000) {
+                resultDiv.innerHTML = `<p class="error-text">Сделка невозможна, так как сумма меньше минимальной (${minAmountInFromCurrency.toFixed(decimals)} ${fromCurrency}).</p>`;
+                return;
+            }
+
+            const commissionRate = await fetchCryptoCommission(amountInRUB);
+            if (commissionRate === null) {
+                resultDiv.innerHTML = '<p class="error-text">Не удалось получить комиссию. Пожалуйста, попробуйте позже.</p>';
+                return;
+            }
+
+            let equivalentAmount, commission, total, commissionCurrency, totalCurrency;
+
+            if (fromCurrency === 'RUB') {
+                equivalentAmount = cryptoAmount / exchangeRates[toCurrency];
+                commission = cryptoAmount * commissionRate;
+                total = cryptoAmount + commission;
+                commissionCurrency = 'RUB';
+                totalCurrency = 'RUB';
+            } else {
+                equivalentAmount = cryptoAmount * exchangeRates[fromCurrency];
+                commission = cryptoAmount * commissionRate;
+                total = cryptoAmount + commission;
+                commissionCurrency = fromCurrency;
+                totalCurrency = fromCurrency;
+            }
+
+            resultDiv.innerHTML = `
+                <p>Сумма: ${cryptoAmount.toFixed(decimals)} ${fromCurrency}</p>
+                <p>Эквивалент: ${equivalentAmount.toFixed(decimals)} ${toCurrency}</p>
+                <p>Комиссия (${(commissionRate * 100).toFixed(2)}%): ${commission.toFixed(decimals)} ${commissionCurrency}</p>
+                <p>Итого: ${total.toFixed(decimals)} ${totalCurrency}</p>
+            `;
+        }
+
+        document.getElementById('calculateCrypto').addEventListener('click', calculateCrypto);
+
+        document.getElementById('resetCrypto').addEventListener('click', () => {
+            document.getElementById('cryptoAmount').value = '';
+            document.getElementById('cryptoPair').value = 'RUB_USDT';
+            document.getElementById('cryptoResult').innerHTML = '';
+            updateCryptoAmountCurrency();
+        });
+
+        updateCryptoAmountCurrency();
+        fetchExchangeRates();
+        fetchCryptoRates();
+    </script>
+</body>
+</html>
